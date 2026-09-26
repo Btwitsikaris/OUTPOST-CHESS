@@ -4,6 +4,6 @@
     "api/ws.js": { "maxDuration": 300 }
   },
   "redirects": [
-    { "source": "/", "destination": "/landingpage.html" }
+    { "source": "/", "destination": "/index.html" }
   ]
 }
