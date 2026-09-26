@@ -2,7 +2,7 @@
   "name": "outpost-chess",
   "version": "3.0.0",
   "private": true,
-  "description": "Outpost Chess \u2014 pass-and-play and online chess, deployed on Vercel with Redis-backed game state.",
+  "description": "Outpost Chess — pass-and-play and online chess, deployed on Vercel with Redis-backed game state.",
   "scripts": {
     "dev": "vercel dev"
   },
