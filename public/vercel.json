@@ -2,8 +2,5 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "api/ws.js": { "maxDuration": 300 }
-  },
-  "redirects": [
-    { "source": "/", "destination": "/index.html" }
-  ]
+  }
 }
