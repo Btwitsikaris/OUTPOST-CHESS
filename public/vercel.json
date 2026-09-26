@@ -4,6 +4,8 @@
     "api/ws.js": { "maxDuration": 300 }
   },
   "rewrites": [
-    { "source": "/", "destination": "/index.html" }
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/mainpage", "destination": "/public/mainpage.html" },
+    { "source": "/:path*", "destination": "/public/:path*" }
   ]
 }
