@@ -1,0 +1,55 @@
+# Outpost Chess (Vercel edition)
+
+Pass-and-play and live online chess. This version is built to deploy on Vercel:
+- Static pages (`landingpage.html`, `mainpage.html`, `chessEngine.js`) are served directly.
+- `api/ws.js` is a Vercel Function that accepts WebSocket connections (Vercel's native WS
+  support, public beta) and validates every move server-side using the shared chess engine.
+- Game/room state lives in **Redis**, not in memory — necessary because a Vercel Function's
+  instances don't share memory, so two players' sockets could land on different instances.
+  Redis Pub/Sub relays moves between instances.
+
+## 1. Create a free Redis database (Upstash)
+
+1. Go to https://upstash.com, sign up free, create a Redis database (any region close to
+   where you'll deploy is fine).
+2. On the database page, copy the **ioredis / Redis URL** connection string — it looks like
+   `rediss://default:<password>@<host>:<port>`.
+
+## 2. Set the environment variable on Vercel
+
+In your Vercel project: **Settings → Environment Variables** →
+add `REDIS_URL` = the connection string from step 1 → save for Production (and Preview/Dev
+if you want previews to work too).
+
+## 3. Deploy
+
+Push this repo to GitHub, then in Vercel: **New Project → Import** your repo → Deploy.
+No build command or output directory is needed — it's a zero-config static + Functions project.
+
+You'll get a free domain like `outpost-chess.vercel.app`. A custom domain (e.g.
+`outpostchess.com`) can be added under **Settings → Domains** once you own one from any registrar.
+
+## Local development
+
+```bash
+npm install -g vercel   # if you don't already have the CLI
+npm install
+vercel link             # connect this folder to your Vercel project
+vercel env pull .env.local   # pulls REDIS_URL down locally
+vercel dev               # serves everything on http://localhost:3000, api/ included
+```
+
+## Known trade-offs (worth knowing, not bugs)
+
+- **5-minute WebSocket cap**: Vercel force-closes any WebSocket connection after 300 seconds,
+  even mid-game, on every plan. The client automatically reconnects using the saved room
+  token, so this shows briefly as "Reconnecting…" rather than ending the game — but it will
+  happen roughly every 5 minutes in a long game.
+- **Match history and lobby data live in Redis**, not a JSON file, so they survive redeploys
+  (unlike a plain filesystem on serverless).
+- **No distributed locking on moves**: two near-simultaneous writes to the same room are
+  rare in a turn-based game (only one player can legally move at a time) but not physically
+  impossible if a client double-sends. Fine for a portfolio project; a production app would
+  add optimistic locking (e.g. a version number checked on save).
+- Threefold repetition is not implemented as a draw condition (50-move rule and insufficient
+  material are).

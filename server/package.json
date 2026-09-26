@@ -1,0 +1,14 @@
+{
+  "name": "outpost-chess-server",
+  "version": "2.0.0",
+  "description": "Full-stack Node.js server for Outpost Chess \u2014 Express + WebSocket + persistent match history",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.18.0"
+  }
+}
