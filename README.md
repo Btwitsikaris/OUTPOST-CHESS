@@ -1,5 +1,5 @@
 # OUTPOST-CHESS
-# Outpost Chess (Vercel edition)
+# Outpost Chess 
 
 Pass-and-play and live online chess. This version is built to deploy on Vercel:
 - Static pages (`landingpage.html`, `mainpage.html`, `chessEngine.js`) are served directly.
