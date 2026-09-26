@@ -243,7 +243,11 @@ function escapeHtml(s){
   return String(s==null?'':s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
 
-let state = ChessEngine.initialState();
+<script src="/chessEngine.js"></script>
+
+<script>
+  let state = ChessEngine.initialState();
+  let state = ChessEngine.initialState();
 let selected=null, legalMoves=[];
 let undoStack=[];
 let mode='local'; // 'local' | 'online'
