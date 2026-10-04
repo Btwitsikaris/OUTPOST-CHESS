@@ -154,16 +154,7 @@ These are design choices worth knowing about, not hidden bugs.
 - **No move locking:** two near-simultaneous writes to one room are theoretically possible, but unlikely in a turn-based game. A production app would add optimistic locking with a version number.
 - **Threefold repetition** is not yet a draw condition.
 
----
 
-## 🗺 Roadmap
-
-- [ ] Threefold repetition draw
-- [ ] Chess clocks and time controls
-- [ ] Draw offers and rematches
-- [ ] In-game chat
-- [ ] Spectator mode
-- [ ] Sound effects and move animations
 
 ---
 
@@ -175,6 +166,6 @@ Ideas and pull requests are welcome. Open an issue first for anything big so we 
 
 <div align="center">
 
-Built by **[Ikaris](https://github.com/Btwitsikaris)** · *Building from pixels to intelligence.* 🌿
+Built by **[Aniket](https://github.com/Btwitsikaris)** · *Building from pixels to intelligence.* 🌿
 
 </div>
