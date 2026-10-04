@@ -1,4 +1,3 @@
-# OUTPOST-CHESS
 <div align="center">
 
 <img src="./favicon.svg" width="84" alt="Outpost Chess logo" />
