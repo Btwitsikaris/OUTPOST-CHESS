@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="90" viewBox="0 0 900 90">
+  <defs>
+    <linearGradient id="gold" x1="0" x2="1">
+      <stop offset="0" stop-color="#f6d28b"/>
+      <stop offset=".5" stop-color="#e8a24a"/>
+      <stop offset="1" stop-color="#c97d2e"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" x2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#fff" stop-opacity=".9"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="txt">
+      <text x="450" y="55" text-anchor="middle"
+            font-family="Georgia, 'Times New Roman', serif" font-style="italic"
+            font-size="42" fill="#fff">Chess, carved from wood &amp; light.</text>
+    </mask>
+  </defs>
+
+  <!-- gold text -->
+  <rect width="900" height="90" fill="url(#gold)" mask="url(#txt)"/>
+
+  <!-- light sweeping across the letters -->
+  <g mask="url(#txt)">
+    <rect x="-200" width="200" height="90" fill="url(#shine)">
+      <animate attributeName="x" from="-200" to="900" dur="4s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+
+  <!-- small ornaments -->
+  <text x="150" y="52" font-size="26" fill="#c97d2e" opacity=".7">♞</text>
+  <text x="725" y="52" font-size="26" fill="#c97d2e" opacity=".7">♞</text>
+</svg>
