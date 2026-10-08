@@ -4,11 +4,9 @@
 
 # Outpost Chess
 
-### Chess, carved from wood &amp; light.
-
-Pass the board to a friend beside you, or send a 5-character code to someone across the world.
-Same rules. Same warm table. However far apart you are.
-
+<p align="center">
+  <img src="assets/tagline.svg" alt="Chess, carved from wood & light." width="620">
+</p>
 <br/>
 
 ![Vanilla JS](https://img.shields.io/badge/Vanilla_JS-c98a3f?style=for-the-badge&logo=javascript&logoColor=241a11)
