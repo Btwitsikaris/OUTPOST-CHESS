@@ -63,9 +63,8 @@ app.get('/api/rooms', (req, res) => {
   res.json(open);
 });
 
-app.get('/api/history', (req, res) => {
-  res.json(db.readMatches().slice(0, 20));
-});
+// match history is private to each browser (localStorage); nothing is served from here
+app.get('/api/history', (req, res) => { res.json([]); });
 
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
