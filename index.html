@@ -1,128 +1,210 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Outpost Chess</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 :root{
-  --bg:#241a11; --panel:#2b1f15; --line:#4d3a26;
-  --gold:#c98a3f; --gold-bright:#e8b165;
-  --light-sq:#eddab3; --dark-sq:#b07f4f;
-  --text:#f3e9d8; --text-dim:#bba98c;
+  --page:#f7ebe1;
+  --ink:#2a190e;
+  --ink-soft:#5d4533;
+  --walnut:#3b2415;
+  --walnut-2:#563621;
+  --amber:#d98d3d;
+  --glass:rgba(255,255,255,.36);
+  --glass-edge:rgba(255,255,255,.62);
+  --serif:'Cormorant Garamond','Iowan Old Style','Palatino Linotype',Georgia,serif;
+  --sans:'Manrope',-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
   box-sizing:border-box;
 }
 *{box-sizing:inherit;}
-html,body{margin:0;height:100%;}
+html,body{margin:0;}
 body{
-  background:radial-gradient(ellipse at 15% -10%, #3a2a18 0%, var(--bg) 55%);
-  color:var(--text); font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
-  overflow-x:hidden;
+  background:
+    radial-gradient(900px 500px at 85% -5%, #fff6ee 0%, transparent 70%),
+    radial-gradient(700px 500px at 0% 100%, #f3d9c3 0%, transparent 70%),
+    var(--page);
+  color:var(--ink); font-family:var(--sans); overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
 }
 a{color:inherit;}
-.blob{position:fixed; border-radius:50%; filter:blur(70px); pointer-events:none; z-index:0; animation:floatBlob 22s ease-in-out infinite;}
-.blob1{width:380px;height:380px; background:var(--gold); opacity:.22; top:-140px; left:-120px;}
-.blob2{width:320px;height:320px; background:#5c3d1f; opacity:.35; bottom:-140px; right:-90px; animation-duration:26s; animation-delay:-6s;}
-@keyframes floatBlob{0%,100%{transform:translate(0,0) scale(1);} 50%{transform:translate(35px,-25px) scale(1.1);}}
-@keyframes fadeUp{from{opacity:0; transform:translateY(16px);} to{opacity:1; transform:translateY(0);}}
-@keyframes shimmer{to{background-position:200% center;}}
+:focus-visible{outline:2px solid var(--walnut); outline-offset:3px; border-radius:8px;}
 
-nav{position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; padding:22px max(24px,4vw);}
-.logo{font-weight:800; font-size:19px; letter-spacing:-.01em;}
-.logo span{background:linear-gradient(90deg,var(--gold-bright),#f3d9a8,var(--gold),var(--gold-bright)); background-size:250% auto; -webkit-background-clip:text; background-clip:text; color:transparent; animation:shimmer 5s linear infinite;}
-nav a.cta{background:var(--gold); color:#241608; padding:9px 18px; border-radius:6px; font-weight:700; font-size:14px; text-decoration:none; transition:transform .2s ease, box-shadow .2s ease;}
-nav a.cta:hover{transform:translateY(-2px); box-shadow:0 10px 20px -8px rgba(201,138,63,.55);}
+/* ---------- Stage (the big rounded hero window) ---------- */
+.stage{
+  position:relative; isolation:isolate; overflow:hidden;
+  margin:max(10px,1.2vw); border-radius:30px;
+  min-height:max(780px, calc(100svh - 2.4vw));
+  display:flex; flex-direction:column;
+  background:
+    radial-gradient(60% 55% at 68% 38%, rgba(255,247,238,.95) 0%, rgba(255,247,238,0) 70%),
+    linear-gradient(168deg, #b9a79d 0%, #d7bfae 26%, #ecd0b6 52%, #f4c59b 78%, #efb07c 100%);
+  box-shadow:0 40px 80px -40px rgba(90,50,20,.45), inset 0 0 0 1px rgba(255,255,255,.35);
+}
+.scene{position:absolute; inset:0; z-index:0;}
+#hero-canvas{display:block; width:100%; height:100%; touch-action:pan-y;
+  -webkit-mask-image:radial-gradient(ellipse 62% 70% at 64% 54%, #000 52%, transparent 100%);
+          mask-image:radial-gradient(ellipse 62% 70% at 64% 54%, #000 52%, transparent 100%);}
 
-.hero{position:relative; min-height:min(640px,90vh); display:flex; align-items:center; justify-content:center; z-index:1;}
-#hero-canvas{position:absolute; inset:0; z-index:0;}
-.hero-inner{position:relative; z-index:1; text-align:center; max-width:640px; padding:0 20px; animation:fadeUp .7s ease both;}
-.hero-inner h1{font-size:clamp(34px,6vw,58px); line-height:1.05; margin:0 0 14px; font-weight:800; letter-spacing:-.02em;}
-.hero-inner h1 span{background:linear-gradient(90deg,var(--gold-bright),#f3d9a8,var(--gold)); background-size:250% auto; -webkit-background-clip:text; background-clip:text; color:transparent; animation:shimmer 5s linear infinite;}
-.hero-inner p{color:var(--text-dim); font-size:16.5px; line-height:1.6; margin:0 0 26px;}
-.btnrow{display:flex; gap:12px; justify-content:center; flex-wrap:wrap;}
-.btn{padding:13px 26px; border-radius:8px; font-weight:700; font-size:15px; text-decoration:none; transition:transform .2s ease, box-shadow .2s ease;}
-.btn.primary{background:var(--gold); color:#241608;}
-.btn.primary:hover{transform:translateY(-3px); box-shadow:0 14px 28px -10px rgba(201,138,63,.6);}
-.btn.ghost{background:transparent; border:1px solid var(--line); color:var(--text);}
-.btn.ghost:hover{transform:translateY(-3px); background:var(--panel);}
+nav{position:relative; z-index:3; display:flex; align-items:center; justify-content:space-between; padding:26px max(26px,3.2vw) 0;}
+.logo{display:flex; align-items:center; gap:10px; font-family:var(--serif); font-weight:700; font-size:24px; letter-spacing:.01em; color:var(--ink);}
+.logo svg{width:24px; height:24px; fill:var(--ink);}
+nav a.cta{
+  background:rgba(255,255,255,.82); color:var(--ink); padding:10px 20px; border-radius:999px;
+  font-weight:600; font-size:14px; text-decoration:none; box-shadow:0 8px 20px -12px rgba(60,30,10,.5);
+  transition:background .2s ease, transform .2s ease;
+}
+nav a.cta:hover{background:#fff; transform:translateY(-1px);}
 
-section{position:relative; z-index:1; max-width:980px; margin:0 auto; padding:70px 20px;}
-.section-tag{color:var(--gold-bright); font-size:13px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; text-align:center; margin-bottom:8px;}
-.section-title{font-size:clamp(24px,4vw,34px); font-weight:800; text-align:center; margin:0 0 40px; letter-spacing:-.01em;}
-.grid3{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:20px;}
-.card{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:26px 22px; opacity:0; animation:fadeUp .6s ease forwards;}
-.card:nth-child(1){animation-delay:.05s;} .card:nth-child(2){animation-delay:.15s;} .card:nth-child(3){animation-delay:.25s;}
-.card:hover{transform:translateY(-4px); transition:transform .25s ease;}
-.card .ico{width:38px; height:38px; margin-bottom:14px;}
-.card h3{margin:0 0 8px; font-size:17px;}
-.card p{margin:0; color:var(--text-dim); font-size:14.5px; line-height:1.6;}
+/* ---------- Hero copy ---------- */
+.hero{position:relative; z-index:2; padding:clamp(34px,6vh,76px) max(26px,3.2vw) 0;}
+.hero-inner{max-width:min(620px,48%);}
+h1{margin:0 0 22px; font-family:var(--serif); font-weight:700; text-transform:uppercase; color:var(--ink); letter-spacing:.015em;}
+h1 .ln{display:block; overflow:hidden; padding:.02em .04em;}
+h1 .ln>span{display:block; transform:translateY(104%); animation:rise .95s cubic-bezier(.2,.8,.2,1) forwards;}
+h1 .sm{font-size:clamp(24px,2.9vw,46px); line-height:1.05; letter-spacing:.05em;}
+h1 .bg{font-size:clamp(64px,9.4vw,152px); line-height:.86;}
+h1 .ln:nth-child(1)>span{animation-delay:.15s;}
+h1 .ln:nth-child(2)>span{animation-delay:.3s;}
+h1 .ln:nth-child(3)>span{animation-delay:.45s;}
+@keyframes rise{to{transform:translateY(0);}}
+@keyframes settle{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;}}
+.hero-inner p{margin:0 0 28px; max-width:46ch; color:var(--ink-soft); font-size:16px; line-height:1.65; font-weight:500; animation:settle .8s ease .85s both;}
+.btnrow{display:flex; gap:12px; flex-wrap:wrap; animation:settle .8s ease 1s both;}
+.btn{display:inline-flex; align-items:center; padding:14px 28px; border-radius:999px; font-weight:700; font-size:15px; text-decoration:none; transition:transform .2s ease, box-shadow .2s ease, background .2s ease;}
+.btn.primary{background:var(--walnut); color:#fbeedd; box-shadow:0 16px 28px -14px rgba(40,20,8,.85);}
+.btn.primary:hover{transform:translateY(-3px); background:var(--walnut-2); box-shadow:0 20px 32px -14px rgba(40,20,8,.9);}
+.btn.ghost{background:var(--glass); border:1px solid var(--glass-edge); color:var(--ink); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);}
+.btn.ghost:hover{transform:translateY(-3px); background:rgba(255,255,255,.6);}
 
-.board-strip{display:grid; grid-template-columns:repeat(8,1fr); max-width:360px; margin:0 auto 50px; border-radius:6px; overflow:hidden; box-shadow:0 20px 40px -14px rgba(0,0,0,.6);}
-.board-strip div{aspect-ratio:1;}
-.board-strip div:nth-child(odd){background:var(--light-sq);}
-.board-strip div:nth-child(even){background:var(--dark-sq);}
+/* ---------- Features (glass cards over the board) ---------- */
+section{position:relative; z-index:2; margin-top:auto; padding:34px max(26px,3.2vw) max(26px,2.6vw);}
+.section-head{display:flex; align-items:baseline; gap:18px; flex-wrap:wrap; margin-bottom:18px; max-width:min(560px,48%);}
+.section-tag{color:var(--ink-soft); font-size:14px; font-weight:600; flex:0 0 100%;}
+.section-title{font-family:var(--serif); font-weight:700; font-size:clamp(26px,2.6vw,38px); line-height:1.08; margin:0; color:var(--ink);}
+.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+.card{
+  --rx:0deg; --ry:0deg;
+  position:relative; padding:22px 22px 24px; border-radius:20px;
+  background:var(--glass); border:1px solid var(--glass-edge);
+  -webkit-backdrop-filter:blur(16px) saturate(1.2); backdrop-filter:blur(16px) saturate(1.2);
+  box-shadow:0 22px 40px -26px rgba(70,35,10,.55), inset 0 1px 0 rgba(255,255,255,.7);
+  transform:perspective(800px) rotateX(var(--rx)) rotateY(var(--ry));
+  transition:transform .35s cubic-bezier(.2,.8,.2,1), background .25s ease;
+  will-change:transform;
+}
+.card.is-tilting{transition:transform .08s linear, background .25s ease;}
+.card:hover{background:rgba(255,255,255,.5);}
+.card::after{content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; opacity:0; transition:opacity .25s ease;
+  background:radial-gradient(260px circle at var(--gx,50%) var(--gy,0%), rgba(255,255,255,.55), transparent 60%);}
+.card:hover::after{opacity:1;}
+.card-top{display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:8px;}
+.card h3{margin:0; font-size:17px; font-weight:700; color:var(--ink);}
+.card .ico{flex:0 0 auto; width:24px; height:24px; fill:var(--ink); opacity:.85;}
+.card p{margin:0; color:var(--ink-soft); font-size:14px; line-height:1.6; font-weight:500;}
 
-footer{position:relative; z-index:1; text-align:center; padding:40px 20px 60px; color:var(--text-dim); font-size:13px;}
-.site-footer{position:relative; z-index:1; margin-top:20px; padding:56px 20px 30px; border-top:1px solid var(--line); background:linear-gradient(180deg, transparent, rgba(0,0,0,.22));}
-.site-footer::before{content:'♟'; position:absolute; top:-15px; left:50%; transform:translateX(-50%); background:var(--bg); padding:0 16px; color:var(--gold-bright); font-size:19px;}
-.footer-inner{max-width:900px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:34px; text-align:left;}
-.footer-logo{font-weight:800; font-size:17px; margin-bottom:10px;}
-.footer-logo span{background:linear-gradient(90deg,var(--gold-bright),#f3d9a8,var(--gold)); background-size:250% auto; -webkit-background-clip:text; background-clip:text; color:transparent; animation:shimmer 5s linear infinite;}
-.footer-col h4{margin:0 0 10px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--gold-bright);}
-.footer-col p{margin:0 0 6px; font-size:13.5px; line-height:1.6; color:var(--text-dim);}
-.footer-mail{display:inline-block; color:var(--gold-bright); text-decoration:none; font-size:13.5px; position:relative;}
-.footer-mail::after{content:''; position:absolute; left:0; bottom:-2px; width:0; height:1px; background:var(--gold-bright); transition:width .25s ease;}
+/* ---------- Footer ---------- */
+footer{position:relative; z-index:1; text-align:center; padding:40px 20px 60px; color:var(--ink-soft); font-size:13px;}
+.site-footer{margin-top:28px; padding:60px 20px 34px; border-top:1px solid rgba(42,25,14,.14);}
+.site-footer::before{content:'\265F\FE0E'; position:absolute; top:-17px; left:50%; transform:translateX(-50%); background:#f6e5d8; padding:0 16px; color:var(--ink); font-size:21px; line-height:1;}
+.footer-inner{max-width:960px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:38px; text-align:left;}
+.footer-logo{font-family:var(--serif); font-weight:700; font-size:24px; margin-bottom:10px; color:var(--ink);}
+.footer-col h4{margin:0 0 10px; font-family:var(--serif); font-size:19px; font-weight:700; color:var(--ink);}
+.footer-col p{margin:0 0 6px; font-size:14px; line-height:1.65; color:var(--ink-soft);}
+.footer-col strong{color:var(--ink);}
+.footer-mail{display:inline-block; color:var(--walnut); font-weight:600; text-decoration:none; font-size:14px; position:relative;}
+.footer-mail::after{content:''; position:absolute; left:0; bottom:-2px; width:0; height:1px; background:var(--walnut); transition:width .25s ease;}
 .footer-mail:hover::after{width:100%;}
-.footer-bottom{text-align:center; margin-top:38px; padding-top:18px; border-top:1px solid var(--line); font-size:12px; color:var(--text-dim);}
+.footer-bottom{text-align:center; margin-top:42px; padding-top:20px; border-top:1px solid rgba(42,25,14,.12); font-size:12.5px; color:var(--ink-soft);}
+
+/* ---------- Tablet / mobile ---------- */
+@media (max-width:900px){
+  .stage{min-height:0; border-radius:24px;}
+  .scene{position:relative; inset:auto; order:3; height:min(84vw,420px); margin-top:-6px;}
+  #hero-canvas{-webkit-mask-image:radial-gradient(ellipse 70% 72% at 50% 52%, #000 55%, transparent 100%); mask-image:radial-gradient(ellipse 70% 72% at 50% 52%, #000 55%, transparent 100%);}
+  nav{order:1;} .hero{order:2;} section{order:4;}
+  .hero-inner{max-width:none;}
+  h1 .bg{font-size:clamp(60px,17vw,120px);}
+  h1 .sm{font-size:clamp(22px,5.6vw,38px);}
+  section{padding-top:8px;}
+  .section-head{max-width:none;}
+  .grid3{grid-template-columns:1fr;}
+}
+@media (prefers-reduced-motion:reduce){
+  h1 .ln>span,.hero-inner p,.btnrow{animation:none; transform:none; opacity:1;}
+  .card,.btn,nav a.cta{transition:none;}
+}
 </style>
 </head>
 <body>
-<div class="blob blob1"></div><div class="blob blob2"></div>
 
-<nav>
-  <div class="logo">Outpost <span>Chess</span></div>
-  <a class="cta" href="#" id="navPlay">Play now</a>
-</nav>
+<div class="stage" id="stage">
+  <div class="scene" id="scene"><canvas id="hero-canvas" aria-hidden="true"></canvas></div>
 
-<div class="hero">
-  <canvas id="hero-canvas"></canvas>
-  <div class="hero-inner">
-    <h1>Chess, carved from <span>wood &amp; light</span></h1>
-    <p>Pass the board to a friend sitting next to you, or send them a room code from across the world. Same rules, same warm table — however far apart you are.</p>
-    <div class="btnrow">
-      <a class="btn primary" id="heroPlay" href="#">Play now</a>
-      <a class="btn ghost" href="#features">See what's inside</a>
+  <nav>
+    <div class="logo">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="6.4" r="3.6"/><path d="M9.6 10.6h4.8c0 2.2.7 3.9 2 5.4H7.6c1.3-1.5 2-3.2 2-5.4z"/><rect x="5.5" y="17" width="13" height="3.2" rx="1.6"/></svg>
+      Outpost Chess
+    </div>
+    <a class="cta" href="mainpage.html" id="navPlay">Play now</a>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-inner">
+      <h1>
+        <span class="ln sm"><span>Chess, carved from</span></span>
+        <span class="ln bg"><span>wood &amp;</span></span>
+        <span class="ln bg"><span>light</span></span>
+      </h1>
+      <p>Pass the board to a friend sitting next to you, or send them a room code from across the world. Same rules, same warm table — however far apart you are.</p>
+      <div class="btnrow">
+        <a class="btn primary" id="heroPlay" href="mainpage.html">Play now</a>
+        <a class="btn ghost" href="#features">See what's inside</a>
+      </div>
     </div>
   </div>
+
+  <section id="features">
+    <div class="section-head">
+      <div class="section-tag">Two ways to play</div>
+      <h2 class="section-title">Built for the table and the tab</h2>
+    </div>
+    <div class="grid3">
+      <div class="card">
+        <div class="card-top">
+          <h3>Pass &amp; Play</h3>
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="6.4" r="3.6"/><path d="M9.6 10.6h4.8c0 2.2.7 3.9 2 5.4H7.6c1.3-1.5 2-3.2 2-5.4z"/><rect x="5.5" y="17" width="13" height="3.2" rx="1.6"/></svg>
+        </div>
+        <p>One board, one device. Hand it back and forth with full rules enforced — legal moves, check, checkmate, stalemate, the works.</p>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <h3>Play Online</h3>
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h2.4v2h2.2V3h4.8v2h2.2V3H19v6.2l-1.6 1.4v6.4L19.4 18v3H4.6v-3L6.6 16v-5.4L5 9.2V3z"/></svg>
+        </div>
+        <p>Create a room, share a 5-character code, and your opponent's moves appear live on your board from wherever they are.</p>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <h3>Hand-carved pieces</h3>
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 20.5c-.2-3.2.4-6.6 2.2-9.3L7.6 11 7 12.4 5.2 11.2c.9-2.6 3.4-5.4 5.8-6.9l.6-2.3 1.7 1.6c3.5.3 6 3.3 6.7 8.2.4 2.8.5 5.6.6 8.7H7.2z"/></svg>
+        </div>
+        <p>Every piece is drawn, not photographed — an ivory-and-walnut set built to feel warm on a screen instead of clinical.</p>
+      </div>
+    </div>
+  </section>
 </div>
-
-<div class="board-strip" id="strip"></div>
-
-<section id="features">
-  <div class="section-tag">Two ways to play</div>
-  <div class="section-title">Built for the table and the tab</div>
-  <div class="grid3">
-    <div class="card">
-      <h3>Pass &amp; Play</h3>
-      <p>One board, one device. Hand it back and forth with full rules enforced — legal moves, check, checkmate, stalemate, the works.</p>
-    </div>
-    <div class="card">
-      <h3>Play Online</h3>
-      <p>Create a room, share a 5-character code, and your opponent's moves appear live on your board from wherever they are.</p>
-    </div>
-    <div class="card">
-      <h3>Hand-carved pieces</h3>
-      <p>Every piece is drawn, not photographed — an ivory-and-walnut set built to feel warm on a screen instead of clinical.</p>
-    </div>
-  </div>
-</section>
 
 <footer class="site-footer">
   <div class="footer-inner">
     <div class="footer-col">
-      <div class="footer-logo">Outpost <span>Chess</span></div>
+      <div class="footer-logo">Outpost Chess</div>
       <p>A quiet chess table, dressed up a little — pass-and-play on one screen, or invite someone in from anywhere.</p>
     </div>
     <div class="footer-col">
@@ -142,96 +224,297 @@ footer{position:relative; z-index:1; text-align:center; padding:40px 20px 60px; 
 <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 
 <script>
-document.getElementById('navPlay').href = "mainpage.html";
-document.getElementById('heroPlay').href = "mainpage.html";
+/* ======================================================================
+   3D hero: turned-wood chess pieces on a glossy board (Three.js r128)
+   ====================================================================== */
+(function(){
+  if(!window.THREE) return;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const stage  = document.getElementById('stage');
+  const mount  = document.getElementById('scene');
+  const canvas = document.getElementById('hero-canvas');
 
-// --- Three.js hero scene: low-poly chess pieces, slow rotation, mouse parallax ---
-const canvas = document.getElementById('hero-canvas');
-const heroEl = canvas.parentElement;
-let w = heroEl.clientWidth, h = heroEl.clientHeight;
+  let renderer;
+  try{
+    renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  }catch(e){ mount.style.display='none'; return; }
 
-const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x241a11, 0.045);
-const camera = new THREE.PerspectiveCamera(42, w/h, 0.1, 100);
-camera.position.set(0, 1.4, 9);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.92;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
-renderer.setSize(w,h); renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  const scene  = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(27, 1, 0.5, 80);
+  const target = new THREE.Vector3(0, 1.25, 0.3);
 
-const ambient = new THREE.AmbientLight(0x3a2a18, 1.4);
-scene.add(ambient);
-const key = new THREE.DirectionalLight(0xe8b165, 1.6);
-key.position.set(4,6,5); scene.add(key);
-const rim = new THREE.PointLight(0xc98a3f, 1.2, 20);
-rim.position.set(-5,2,-3); scene.add(rim);
+  /* ---------- soft studio reflections (drawn on a canvas, no external files) ---------- */
+  (function buildEnvironment(){
+    const c = document.createElement('canvas'); c.width = 1024; c.height = 512;
+    const g = c.getContext('2d');
+    const sky = g.createLinearGradient(0,0,0,512);
+    sky.addColorStop(0,'#fff4e6'); sky.addColorStop(.5,'#f3c9a3'); sky.addColorStop(1,'#6b4026');
+    g.fillStyle = sky; g.fillRect(0,0,1024,512);
+    const soft = (x,y,w,h,col)=>{
+      const r = g.createRadialGradient(x,y,0,x,y,Math.max(w,h));
+      r.addColorStop(0,col); r.addColorStop(1,'rgba(255,255,255,0)');
+      g.save(); g.translate(x,y); g.scale(w/Math.max(w,h), h/Math.max(w,h)); g.translate(-x,-y);
+      g.fillStyle = r; g.fillRect(x-Math.max(w,h), y-Math.max(w,h), Math.max(w,h)*2, Math.max(w,h)*2); g.restore();
+    };
+    soft(300,110,260,90,'rgba(255,255,255,1)');
+    soft(760,170,150,80,'rgba(255,226,190,.9)');
+    soft(540,60,300,40,'rgba(255,255,255,.8)');
+    const tex = new THREE.CanvasTexture(c);
+    tex.mapping = THREE.EquirectangularReflectionMapping; tex.encoding = THREE.sRGBEncoding;
+    const pm = new THREE.PMREMGenerator(renderer);
+    scene.environment = pm.fromEquirectangular(tex).texture;
+    pm.dispose(); tex.dispose();
+  })();
 
-function makePiece(kind, color){
-  const g = new THREE.Group();
-  const mat = new THREE.MeshStandardMaterial({color, roughness:0.45, metalness:0.15});
-  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.55,0.65,0.22,24), mat);
-  base.position.y = 0.11; g.add(base);
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.28,0.5,1.15,24), mat);
-  body.position.y = 0.22 + 0.575; g.add(body);
-  if(kind==='king'){
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.32,20,20), mat);
-    head.position.y = 1.55; g.add(head);
-    const crossV = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.42,0.1), mat);
-    crossV.position.y = 2.0; g.add(crossV);
-    const crossH = new THREE.Mesh(new THREE.BoxGeometry(0.32,0.1,0.1), mat);
-    crossH.position.y = 1.95; g.add(crossH);
-  } else if(kind==='queen'){
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.3,20,20), mat);
-    head.position.y = 1.5; g.add(head);
-    for(let i=0;i<5;i++){
-      const s = new THREE.Mesh(new THREE.SphereGeometry(0.08,10,10), mat);
-      const a = (i/4)*Math.PI - Math.PI/2;
-      s.position.set(Math.cos(a)*0.28, 1.85, Math.sin(a)*0.1);
-      g.add(s);
+  /* ---------- lights ---------- */
+  scene.add(new THREE.HemisphereLight(0xfff1e2, 0xd79a6a, 0.35));
+  const key = new THREE.DirectionalLight(0xfff0dc, 1.5);
+  key.position.set(-6, 11, 8);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  Object.assign(key.shadow.camera, {left:-8, right:8, top:8, bottom:-8, near:1, far:30});
+  key.shadow.bias = -0.0004;
+  key.shadow.normalBias = 0.02;
+  scene.add(key);
+  const fill = new THREE.DirectionalLight(0xffc89a, 0.55); fill.position.set(8, 4, 6); scene.add(fill);
+  const rim  = new THREE.DirectionalLight(0xffe2c4, 0.9);  rim.position.set(2, 6, -9); scene.add(rim);
+
+  /* ---------- procedural wood ---------- */
+  function woodTexture(base, grain, seed, size){
+    const c = document.createElement('canvas'); c.width = c.height = size || 512;
+    const S = c.width, g = c.getContext('2d');
+    g.fillStyle = base; g.fillRect(0,0,S,S);
+    let s = seed; const rnd = ()=> (s = (s*16807) % 2147483647) / 2147483647;
+    for(let i=0;i<280;i++){
+      const x = rnd()*S, w = .6 + rnd()*2.8, a = .04 + rnd()*.14, ph = rnd()*6, amp = 2 + rnd()*7;
+      g.strokeStyle = grain.replace('A', a.toFixed(3)); g.lineWidth = w;
+      for(const off of [-S,0,S]){
+        g.beginPath();
+        for(let y=0;y<=S;y+=16){ const xx = x + off + Math.sin(y*.013+ph)*amp; y ? g.lineTo(xx,y) : g.moveTo(xx,y); }
+        g.stroke();
+      }
     }
-  } else {
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.26,18,18), mat);
-    head.position.y = 1.45; g.add(head);
+    const t = new THREE.CanvasTexture(c);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping; t.encoding = THREE.sRGBEncoding;
+    t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    return t;
   }
-  g.traverse(o=>{ if(o.isMesh){ o.castShadow=false; }});
-  return g;
-}
+  function wood(base, grain, seed, rough, coat){
+    const map = woodTexture(base, grain, seed);
+    map.repeat.set(2, 1);
+    return new THREE.MeshPhysicalMaterial({map, roughness:rough, metalness:0, clearcoat:coat, clearcoatRoughness:.28, envMapIntensity:1.0});
+  }
+  const M = {
+    ivory : wood('#f3e6cb', 'rgba(150,120,70,A)', 11, .34, .55),
+    amber : wood('#d58a3e', 'rgba(110,55,15,A)',  23, .38, .6),
+    walnut: wood('#6a3b1d', 'rgba(25,10,3,A)',    37, .40, .6),
+  };
 
-const group = new THREE.Group();
-const king = makePiece('king', 0xe3c98d); king.position.set(-1.6,-0.3,0); king.scale.setScalar(1.05);
-const queen = makePiece('queen', 0x3a2415); queen.position.set(0,-0.5,-0.6);
-const pawn = makePiece('pawn', 0xe3c98d); pawn.position.set(1.7,-0.6,0.3); pawn.scale.setScalar(0.85);
-group.add(king, queen, pawn);
-group.rotation.y = -0.3;
-scene.add(group);
+  /* ---------- geometry helpers ---------- */
+  function lathe(pts, mat){
+    const curve = new THREE.SplineCurve(pts.map(p=>new THREE.Vector2(p[0], p[1])));
+    const sp = curve.getPoints(pts.length*8);
+    sp.forEach(p=>{ if(p.x < 0.0001) p.x = 0.0001; });
+    const m = new THREE.Mesh(new THREE.LatheGeometry(sp, 72), mat);
+    return m;
+  }
+  function ball(r, y, mat, sy){
+    const m = new THREE.Mesh(new THREE.SphereGeometry(r, 40, 28), mat);
+    m.position.y = y; if(sy) m.scale.y = sy; return m;
+  }
+  function finish(g){
+    g.traverse(o=>{ if(o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
+    return g;
+  }
 
-let mx=0, my=0;
-window.addEventListener('mousemove', e=>{
-  mx = (e.clientX / window.innerWidth - 0.5);
-  my = (e.clientY / window.innerHeight - 0.5);
-});
+  function pawn(mat){
+    const g = new THREE.Group();
+    g.add(lathe([[0,0],[.46,0],[.5,.04],[.5,.12],[.4,.2],[.27,.32],[.2,.52],[.17,.72],[.23,.8],[.32,.84],[.32,.9],[.22,.95],[.16,1.0],[0,1.0]], mat));
+    g.add(ball(.28, 1.2, mat));
+    return finish(g);
+  }
 
-const clock = new THREE.Clock();
-function animate(){
-  requestAnimationFrame(animate);
-  const t = clock.getElapsedTime();
-  group.rotation.y += 0.0022;
-  group.rotation.x = my*0.15;
-  group.position.y = Math.sin(t*0.6)*0.08;
-  camera.position.x += (mx*1.2 - camera.position.x)*0.02;
-  camera.lookAt(0,0.4,0);
-  renderer.render(scene, camera);
-}
-animate();
+  function king(mat){
+    const g = new THREE.Group();
+    g.add(lathe([[0,0],[.66,0],[.72,.05],[.72,.16],[.6,.27],[.42,.42],[.3,.78],[.26,1.2],[.29,1.6],[.42,1.78],[.48,1.86],[.48,1.96],[.35,2.06],[.31,2.14],[.43,2.32],[.5,2.58],[.45,2.8],[.22,2.9],[0,2.92]], mat));
+    const v = new THREE.Mesh(new THREE.BoxGeometry(.15,.62,.15), mat); v.position.y = 3.22;
+    const h = new THREE.Mesh(new THREE.BoxGeometry(.46,.15,.15), mat); h.position.y = 3.3;
+    g.add(v, h);
+    return finish(g);
+  }
 
-window.addEventListener('resize', ()=>{
-  w = heroEl.clientWidth; h = heroEl.clientHeight;
-  camera.aspect = w/h; camera.updateProjectionMatrix();
-  renderer.setSize(w,h);
-});
+  function knight(mat, eyeMat){
+    const g = new THREE.Group();
+    g.add(lathe([[0,0],[.62,0],[.68,.05],[.68,.15],[.56,.26],[.47,.4],[.5,.5],[.44,.56],[0,.56]], mat));
+    // horse head silhouette, facing +x
+    const pts = [[-.40,0],[-.43,.25],[-.39,.6],[-.31,.95],[-.21,1.25],[-.13,1.5],[-.13,1.72],[-.02,1.93],[.08,1.74],[.22,1.66],[.42,1.42],[.58,1.22],[.64,1.08],[.56,.98],[.40,1.02],[.24,.98],[.20,.80],[.30,.55],[.38,.25],[.40,0]]
+      .map(p=>new THREE.Vector2(p[0], p[1]));
+    const outline = new THREE.SplineCurve(pts).getPoints(140);
+    const shape = new THREE.Shape();
+    shape.moveTo(outline[0].x, outline[0].y);
+    outline.forEach(p=>shape.lineTo(p.x, p.y));
+    shape.closePath();
+    const geo = new THREE.ExtrudeGeometry(shape, {depth:.34, bevelEnabled:true, bevelThickness:.1, bevelSize:.09, bevelSegments:6, curveSegments:8});
+    geo.translate(0,0,-.17);
+    const head = new THREE.Mesh(geo, mat); head.position.y = .5; g.add(head);
+    const eyeG = new THREE.SphereGeometry(.045, 16, 12);
+    [-1,1].forEach(s=>{ const e = new THREE.Mesh(eyeG, eyeMat); e.position.set(.3, 1.9, s*.285); g.add(e); });
+    return finish(g);
+  }
 
-// decorative static board strip
-const strip = document.getElementById('strip');
-for(let i=0;i<16;i++) strip.appendChild(document.createElement('div'));
+  /* ---------- board ---------- */
+  (function board(){
+    const S = 1024, c = document.createElement('canvas'); c.width = c.height = S;
+    const g = c.getContext('2d'), q = S/8;
+    for(let r=0;r<8;r++) for(let f=0;f<8;f++){
+      g.fillStyle = (r+f)%2 ? '#a8622d' : '#e6caa0'; g.fillRect(f*q, r*q, q, q);
+    }
+    let s = 91; const rnd = ()=> (s = (s*16807) % 2147483647) / 2147483647;
+    for(let i=0;i<420;i++){
+      const x = rnd()*S, y = rnd()*S, l = 60 + rnd()*220;
+      g.strokeStyle = 'rgba(70,35,10,'+(.03+rnd()*.07).toFixed(3)+')'; g.lineWidth = .6 + rnd()*1.8;
+      g.beginPath(); g.moveTo(x,y); g.lineTo(x + (rnd()-.5)*16, y + l); g.stroke();
+    }
+    const tex = new THREE.CanvasTexture(c); tex.encoding = THREE.sRGBEncoding;
+    tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    const top = new THREE.Mesh(new THREE.PlaneGeometry(8, 8),
+      new THREE.MeshPhysicalMaterial({map:tex, roughness:.38, clearcoat:.7, clearcoatRoughness:.22, envMapIntensity:.9}));
+    top.rotation.x = -Math.PI/2; top.position.y = .002; top.receiveShadow = true;
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(8.8, .4, 8.8), wood('#6a3b1d','rgba(25,10,3,A)',53,.45,.4));
+    frame.position.y = -.2; frame.receiveShadow = true;
+    scene.add(top, frame);
+  })();
+
+  /* ---------- the set ---------- */
+  const eye = new THREE.MeshStandardMaterial({color:0x1a0e07, roughness:.3});
+  const stageGroup = new THREE.Group(); scene.add(stageGroup);
+  const pieces = [];
+  function place(obj, x, z, ry, delay, scale){
+    obj.position.set(x, 0, z); obj.rotation.y = ry; obj.scale.setScalar(scale || 1);
+    obj.userData = {x, z, ry, delay, base:scale || 1, hop:-1, hover:0};
+    obj.traverse(o=>{ if(o.isMesh) o.userData.piece = obj; });
+    stageGroup.add(obj); pieces.push(obj);
+  }
+  place(king(M.ivory),               .5, -1.3, .25, .35, 1.0);
+  place(knight(M.amber,  eye),      2.9, -.1,  3.78, .55, 1.08);
+  place(knight(M.ivory,  eye),     -1.9, -.2, -.64, .5, 1.08);
+  place(pawn(M.walnut),            -3.2,  1.3, 0,  .85, 1.0);
+  place(pawn(M.ivory),             -1.0,  2.0, 0,  .95, 1.0);
+  place(pawn(M.amber),              1.3,  2.1, 0,  .75, 1.0);
+  place(pawn(M.ivory),              3.4,  1.3, 0,  1.05, 1.0);
+
+  /* ---------- sizing ---------- */
+  let baseDist = 16, wide = true, W = 1, H = 1;
+  function resize(){
+    W = mount.clientWidth; H = mount.clientHeight;
+    if(!W || !H) return;
+    renderer.setSize(W, H, false);
+    camera.aspect = W/H;
+    wide = W > 900;
+    baseDist = wide ? Math.max(16.2, 17 * (1.55/Math.min(camera.aspect,1.9))) : Math.max(14.6, 15.6 * (1.2/camera.aspect));
+    if(wide) camera.setViewOffset(W, H, -W*.15, -H*.02, W, H); else camera.clearViewOffset();
+    camera.updateProjectionMatrix();
+    needsRender = true;
+  }
+  let needsRender = true;
+  new ResizeObserver(resize).observe(mount);
+
+  /* ---------- interaction ---------- */
+  let mx=0, my=0, sx=0, sy=0, hovered=null;
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+  function pick(e){
+    const r = canvas.getBoundingClientRect();
+    ndc.set(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
+    ray.setFromCamera(ndc, camera);
+    const hit = ray.intersectObjects(stageGroup.children, true).find(h=>h.object.userData.piece);
+    return hit ? hit.object.userData.piece : null;
+  }
+  const overUI = e => e.target.closest && e.target.closest('a,.card,nav');
+  stage.addEventListener('pointermove', e=>{
+    if(e.pointerType === 'touch') return;
+    const r = stage.getBoundingClientRect();
+    mx = (e.clientX - r.left)/r.width - .5; my = (e.clientY - r.top)/r.height - .5;
+    hovered = overUI(e) ? null : pick(e);
+    stage.style.cursor = hovered ? 'pointer' : '';
+    needsRender = true;
+  });
+  stage.addEventListener('pointerleave', ()=>{ hovered = null; mx = my = 0; stage.style.cursor=''; });
+  stage.addEventListener('click', e=>{
+    if(overUI(e)) return;
+    const p = pick(e);
+    if(p && p.userData.hop < 0){ p.userData.hop = clock.getElapsedTime(); }
+  });
+
+  /* ---------- loop ---------- */
+  const clock = new THREE.Clock();
+  const ease = t => 1 - Math.pow(1-t, 3);
+  const easeBack = t => { const c1 = 1.4, c3 = c1+1; return 1 + c3*Math.pow(t-1,3) + c1*Math.pow(t-1,2); };
+  const INTRO = reduce ? 0 : 1.1;
+  let visible = true, last = 0;
+
+  function frame(){
+    requestAnimationFrame(frame);
+    if(!visible || document.hidden) return;
+    const t = clock.getElapsedTime();
+    const introDone = t > 2.6;
+    if(reduce && !needsRender) return;
+    if(!reduce || needsRender){
+      sx += (mx - sx)*.05; sy += (my - sy)*.05;
+      const sc = Math.min(window.scrollY/700, 1);
+
+      pieces.forEach(p=>{
+        const u = p.userData;
+        let y = 0, spin = 0, s = u.base;
+        if(!reduce){
+          const k = Math.min(Math.max((t - u.delay)/INTRO, 0), 1);
+          if(k < 1){ y = (1 - easeBack(k))*9; spin = (1 - ease(k))*Math.PI*1.6; if(k === 0) y = 9; }
+          if(u.hop >= 0){
+            const hk = (t - u.hop)/.9;
+            if(hk >= 1) u.hop = -1; else { y += Math.sin(hk*Math.PI)*1.1; spin += ease(hk)*Math.PI*2; }
+          }
+          const tgt = (hovered === p) ? 1.05 : 1; u.hover += (tgt - u.hover)*.12; s *= u.hover;
+        }
+        p.position.y = y; p.rotation.y = u.ry + spin; p.scale.setScalar(s);
+      });
+
+      const az = reduce ? 0 : Math.sin(t*.22)*.07 + sx*.3 + sc*.5;
+      stageGroup.rotation.y = az;
+      const R = baseDist, el = .36 - sy*.06 - sc*.06;
+      camera.position.set(0, target.y + Math.sin(el)*R, target.z + Math.cos(el)*R);
+      camera.lookAt(target);
+      renderer.render(scene, camera);
+      needsRender = false;
+    }
+  }
+  new IntersectionObserver(es=>{ visible = es[0].isIntersecting; if(visible) needsRender = true; }).observe(stage);
+  window.addEventListener('scroll', ()=>{ needsRender = true; }, {passive:true});
+  resize(); frame();
+})();
+
+/* ---------- card tilt: answers the pointer ---------- */
+(function(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches || matchMedia('(hover: none)').matches) return;
+  document.querySelectorAll('.card').forEach(card=>{
+    card.addEventListener('pointermove', e=>{
+      const r = card.getBoundingClientRect(), px = (e.clientX-r.left)/r.width, py = (e.clientY-r.top)/r.height;
+      card.classList.add('is-tilting');
+      card.style.setProperty('--ry', ((px-.5)*9).toFixed(2)+'deg');
+      card.style.setProperty('--rx', ((.5-py)*7).toFixed(2)+'deg');
+      card.style.setProperty('--gx', (px*100)+'%'); card.style.setProperty('--gy', (py*100)+'%');
+    });
+    card.addEventListener('pointerleave', ()=>{
+      card.classList.remove('is-tilting');
+      card.style.setProperty('--rx','0deg'); card.style.setProperty('--ry','0deg');
+    });
+  });
+})();
 </script>
 </body>
 </html>
