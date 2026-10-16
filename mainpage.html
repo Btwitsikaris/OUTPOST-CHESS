@@ -487,8 +487,14 @@ input.code:focus{border-color:var(--walnut); box-shadow:0 0 0 3px rgba(59,36,21,
 .promo-choices button:hover{background:var(--walnut); color:#fbeedd; transform:translateY(-2px);}
 
 @media (max-width:640px){ .sidebar{width:min(88vw,480px);} .stage{border-radius:24px;} }
+@keyframes softIn{from{opacity:0;} to{opacity:1;}}
 @media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation:none !important; transition:none !important;}
+  /* no movement, but keep a gentle fade so the board still has an opening */
+  *,*::before,*::after{transition:none !important;}
+  h1,.tag,.modebar,.layout,.sq.checked{animation:none;}
+  .board-wrap{animation:softIn 1s ease .15s both;}
+  .sq.sq-in{animation:softIn .5s ease both;}
+  .sq.sq-in svg{animation:softIn .6s ease backwards;}
 }
 </style>
 </head>
@@ -621,6 +627,12 @@ function resetGame(){
   state = ChessEngine.initialState();
   selected=null; legalMoves=[]; undoStack=[];
   render();
+}
+
+function playOpening(){
+  const w=document.querySelector('.board-wrap');
+  w.style.animation='none'; void w.offsetWidth; w.style.animation='';
+  firstRender=true; resetGame(); firstRender=false;
 }
 
 function render(){
@@ -861,7 +873,7 @@ document.getElementById('newGame').addEventListener('click', ()=>{
   if(mode==='online' && myColor==='w' && confirm('Start a new game? This ends the current one.')){
     sendMsg({type:'resign'}); // simplest safe reset: end this game; players can create/join a fresh room
   } else if(mode==='local'){
-    resetGame();
+    playOpening();
   }
 });
 document.getElementById('createRoom').addEventListener('click', createRoom);
@@ -874,7 +886,7 @@ document.getElementById('modeLocal').addEventListener('click', ()=>{
   document.getElementById('modeLocal').classList.add('active');
   document.getElementById('modeOnline').classList.remove('active');
   document.getElementById('onlinePanel').style.display='none';
-  resetGame();
+  playOpening();
 });
 document.getElementById('modeOnline').addEventListener('click', ()=>{
   document.getElementById('modeOnline').classList.add('active');
