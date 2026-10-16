@@ -621,6 +621,7 @@ let mode='local'; // 'local' | 'online'
 let myColor=null, socket=null, roomStatus='';
 let myName='', oppName='', lobbyTimer=null, roomCode=null, myToken=null;
 let firstRender=true;
+let lastRecordedRoom=null;
 let pendingPromotion=null; // {from,to} awaiting a piece choice
 
 function resetGame(){
@@ -712,6 +713,7 @@ function finishMove(from, to, promotion){
   if(result.ok){ state = result.state; }
   selected=null; legalMoves=[];
   render();
+  if(result.ok && state.gameOver) recordLocalGame('White','Black');
 }
 
 function onSquareClick(r,c){
@@ -738,7 +740,11 @@ function applySnapshot(newState){
   state = newState;
   roomStatus = state.gameOver ? 'over' : 'playing';
   selected=null; legalMoves=[]; render();
-  if(state.gameOver) setTimeout(loadHistory, 700);
+  if(state.gameOver && roomCode && lastRecordedRoom!==roomCode){
+    lastRecordedRoom=roomCode;
+    const me=myName||'You', opp=oppName||'Opponent';
+    recordLocalGame(myColor==='b'?opp:me, myColor==='b'?me:opp);
+  }
 }
 function sendMsg(obj){ if(socket && socket.readyState===WebSocket.OPEN) socket.send(JSON.stringify(obj)); }
 function saveSession(){
@@ -858,15 +864,24 @@ async function loadLobby(){
 }
 function startLobbyPolling(){ loadLobby(); lobbyTimer = setInterval(loadLobby, 3000); }
 function stopLobbyPolling(){ if(lobbyTimer){ clearInterval(lobbyTimer); lobbyTimer=null; } }
-async function loadHistory(){
-  try{
-    const res = await fetch(httpBase()+'/api/history');
-    const matches = await res.json();
-    const el = document.getElementById('matchHistory');
-    if(!matches.length){ el.textContent='No games recorded yet.'; return; }
-    el.innerHTML = matches.slice(0,8).map(m=>
-      `<div class="histrow"><b>${escapeHtml(m.white)}</b> vs <b>${escapeHtml(m.black)}</b><br>${escapeHtml(m.result)} \u00b7 ${escapeHtml(String(m.moves))} moves</div>`).join('');
-  }catch(e){ /* server not running yet; leave placeholder */ }
+// --- private game history: stored only in this browser (localStorage), never shared ---
+const HIST_KEY='outpostChessHistory';
+function readLocalHistory(){ try{ return JSON.parse(localStorage.getItem(HIST_KEY)||'[]'); }catch(e){ return []; } }
+function writeLocalHistory(list){ try{ localStorage.setItem(HIST_KEY, JSON.stringify(list.slice(0,20))); }catch(e){} }
+function recordLocalGame(white, black){
+  const list=readLocalHistory();
+  list.unshift({ white, black, result: state.result||'Game over', moves:(state.history||[]).length, date:new Date().toISOString() });
+  writeLocalHistory(list);
+  loadHistory();
+}
+function loadHistory(){
+  const el=document.getElementById('matchHistory');
+  const matches=readLocalHistory();
+  if(!matches.length){ el.textContent='No games recorded yet.'; return; }
+  el.innerHTML = matches.slice(0,8).map(m=>
+    `<div class="histrow"><b>${escapeHtml(m.white)}</b> vs <b>${escapeHtml(m.black)}</b><br>${escapeHtml(m.result)} \u00b7 ${escapeHtml(String(m.moves))} moves</div>`).join('')
+    + '<button class="ghost" id="clearHistory" style="margin-top:10px; padding:7px 12px; font-size:12.5px">Clear history</button>';
+  document.getElementById('clearHistory').addEventListener('click', ()=>{ writeLocalHistory([]); loadHistory(); });
 }
 
 document.getElementById('newGame').addEventListener('click', ()=>{
